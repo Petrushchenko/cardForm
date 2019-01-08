@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>form</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link  href="styles/datepicker.css" rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="styles/style.css">
+
+</head>
+<body>
+    <div class="wrapper">
+        <form>
+            <label for="card"> Credit Card Number </label>
+            <input type="text" name="card" id="card" placeholder="only positive integers" required>
+
+            <label for="expiration"> Expiration Date </label>
+            <input id="expiration" name="expiration" data-toggle="datepicker" required>
+            <div data-toggle="datepicker"></div>
+
+            <label for="cvv">CVV number</label>
+            <input type="text"  id="cvv" name="cvv" placeholder="only positive integers" required>
+           
+            <div>
+                <input type="checkbox" name="save" id="save" >
+                <label for="save">Store the card</label>
+            </div>
+           
+            
+            <button>Submit</button>
+        </form>
+        <div class="preloader">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <script type="text/javascript" src="js/script.js"></script>
+    <script src="js/datepicker.js"></script>
+
+    <script type="text/javascript">
+        $('[data-toggle="datepicker"]').datepicker({
+            autoHide: true
+        });
+    </script>
+</body>
+</html>
