@@ -18,6 +18,46 @@ const isModifierKey = (event) => {
             (key === 65 || key === 67 || key === 86 || key === 88 || key === 90)
         )
 };
+const modifierInput = (event) => {
+        let newValue = '';
+        const target = event.target;
+
+        if(isModifierKey(event)) {
+
+            if (event.keyCode === 8) {
+
+               if (target.selectionStart <= 19) {
+
+                    let part1 = target.value.slice(0, target.selectionStart-1);
+                    let part2 = target.value.slice(target.selectionStart);
+                  
+                    if (part2.length > 0) {
+                        part2 = part2.replace(/\D/g, '');
+                       
+                        while(!Number.isInteger((part1.length + 1) / 5 )){
+                            part1 += part2.slice(0,1);
+                            part2 = part2.split('').slice(1).join('');
+
+                        }
+                        if(part2.length > 4) {
+                            let n = part2.split('').map((item, i) => (i + 1) % 4 === 0 ? item + " " : item).join('');
+                            part2 = n;
+                        }
+                        newValue =  `${part1} ${part2}`; 
+                    } else {
+                        newValue = part1;
+                    }
+                   
+                }
+            } else {
+               if (
+                (event.keyCode > 36 && event.keyCode < 41) 
+                || (event.shiftKey === true || event.keyCode === 35 || event.keyCode === 36)
+                ) {return;}
+            }
+        }
+        return newValue;  
+    }
 const enforceFormat = (event) => {
     // Input must be of a valid number format or a modifier key
     if(!isNumericInput(event) && !isModifierKey(event)){
@@ -25,53 +65,16 @@ const enforceFormat = (event) => {
     }
 
     const target = event.target;
-    let inputLength = target.value.replace(/\D/g, '').length;
-    let cursorStart = target.selectionStart;
-    console.log(cursorStart);
 
-    if(isModifierKey(event)) {
-        //console.log(target.selectionStart);
-
-        if (
-            (event.keyCode > 36 && event.keyCode < 41) 
-            || (event.shiftKey === true || event.keyCode === 35 || event.keyCode === 36)
-            ) {
-            return;
-        } else {
-           // target.value = target.value.replace(/\D/g, '');
-            console.log(target.value, target.selectionStart, inputLength);
-
-            if (target.selectionStart < 19) {
-                let modifiedInput = '';
-
-                /*for (var i = 0; i < inputLength; i+=4) {
-                    modifiedInput += target.value.slice(i, i+4) + " " ;
-                    console.log(i, modifiedInput);
-                }
-                console.log(modifiedInput)
-                target.value = modifiedInput;*/
-                let part1 = target.value.slice(0, target.selectionStart-1);
-                let part2 = target.value.slice(target.selectionStart);
-                part2 = part2.replace(/\D/g, '');
-                let newValue =  part1 + part2; 
-                //target.selectionStart = target.selectionStart +1;
-
-                console.log(target.value, 
-                    "aaaaa "+part1,
-                    "bbbbb "+part2,
-                     Math.floor(target.selectionStart / 5), newValue);
-            }
-        }
-        
-        console.log(event.eventPhase);
-    
+    if (modifierInput(event)) {
+        event.preventDefault();
+        target.value = modifierInput(event);
     }
+
+    let inputLength = target.value.replace(/\D/g, '').length;
 
 
     if (isNumericInput(event)) {
-
-        //let inputLength = target.value.replace(/\D/g, '').length;
-
         if (inputLength > 0 && inputLength%4 === 0 && target.value.length < 16) {
             target.value = `${target.value} `;
         } 
@@ -79,59 +82,9 @@ const enforceFormat = (event) => {
             event.preventDefault();
         }
         
-    } else {
-       // formatToPhone(event);
-   // console.log(target.value, inputLength);
-    }
+    } 
 
 };
-
-const formatToPhone = (event) => {
-    if(isModifierKey(event)) {
-        console.log('yes')
-        return;
-    }
-     const target = event.target;
-    let inputLength = target.value.replace(/\D/g, '').length;
-
-
-   /* if (target.value.length <= 16) {
-            let modifiedInput = '';
-
-            for (var i = 0; i <= inputLength; i+=4) {
-                modifiedInput += target.value.slice(i, i+4) + " " ;
-                console.log(i);
-            }
-            console.log(modifiedInput)
-            target.value = modifiedInput;
-            console.log(target.value);
-        }*/
-    // I am lazy and don't like to type things more than once
-    /*const target = event.target;
-    const input = target.value.replace(/\D/g,'').substring(0,10); // First ten digits of input only
-    const zip = input.substring(0,3);
-    const middle = input.substring(3,6);
-    const last = input.substring(6,10);
-
-    if(input.length > 6){target.value = `(${zip}) ${middle} - ${last}`;}
-    else if(input.length > 3){target.value = `(${zip}) ${middle}`;}
-    else if(input.length > 0){target.value = `(${zip}`;}*/
-
-};
-
-( function(){
-    let form = document.querySelector('form');
-    let btn = form.querySelector('button');
-
-    form.addEventListener('click', (e) => handleEmail(e, form, btn));
-    btn.addEventListener('click', checkForm);
-
-    
-    let cardInput = document.querySelector('#card');
-    cardInput.addEventListener('keydown', enforceFormat);
-   // cardInput.addEventListener('input',formatToPhone);
-
-})()
 
 // Show or hide <input type="email" >
 function handleEmail(e, parent, el) {
@@ -148,8 +101,7 @@ function handleEmail(e, parent, el) {
         } else {
             parent.removeChild(document.querySelector('input[type="email"]'));
         }
-    }
-    
+    }   
 }
 
 function checkForm (e) {
@@ -163,12 +115,18 @@ function checkForm (e) {
 
     textFields.forEach((item) => {
 
-        if (item.id === 'card') {
-            console.log(item)
-        }
-
         let inp = new Verification(item);
-        res.push(inp.isRequired());
+        let val = inp.isRequired();
+        if (item.id === "card" ) {
+            if(val.replace(/\D/g, '').length === 16) {
+        
+                res.push(val);
+            } else {
+                inp.checkCard();
+            }
+        } else {
+            res.push(val);
+        }
 
     });
 
@@ -183,7 +141,7 @@ function checkForm (e) {
         res.push(checkPost.checkEmail());
 
     }
-    console.log(res, res.every((item) => item));
+    console.log(res);
     if(res.every((item) => item)) {
         let preloader = document.querySelector('.preloader');
 
@@ -191,7 +149,6 @@ function checkForm (e) {
         setTimeout(() => preloader.style.display = "none", 2000);
     }
 }
-
 
 class Verification {
     constructor(elem){
@@ -262,9 +219,34 @@ class Verification {
         } else {
             this.elem.classList.remove('error');
             this.removeMessage();
-
+            return this.elem.value;
         }
-        return this.elem.value;
     }
+    checkCard(){
+        this.message = "Card number shoud contain 16 integers";
+        this.nextEl = this.elem.nextElementSibling;
 
+        this.removeMessage();
+        if (this.elem.value.length < 19) {
+                this.valid = !this.valid;
+                this.elem.classList.add('error');
+
+                this.showError();
+        } else {
+            return this.elem.value;
+        }
+       
+    }
 }
+
+( function(){
+    let form = document.querySelector('form');
+    let btn = form.querySelector('button');
+
+    form.addEventListener('click', (e) => handleEmail(e, form, btn));
+    btn.addEventListener('click', checkForm);
+  
+    let cardInputs = document.querySelectorAll('input[type="text"]');
+    cardInputs.forEach((inp) => inp.addEventListener('keydown', enforceFormat)) ;
+
+})()
